@@ -84,7 +84,7 @@ jobs:
       - name: Check format
         run: cargo fmt --all -- --check
       - name: Lint
-        run: cargo clippy --all-targets $CARGO_FEATURES -D warnings
+        run: cargo clippy --all-targets $CARGO_FEATURES -- -D warnings
       - name: Build
         run: cargo build --all-targets $CARGO_FEATURES
       - name: Test bindings
@@ -122,7 +122,7 @@ jobs:
       - name: Check format
         run: cargo fmt --all -- --check
       - name: Lint
-        run: cargo clippy --all-targets $CARGO_FEATURES -D warnings
+        run: cargo clippy --all-targets $CARGO_FEATURES -- -D warnings
       - name: Build
         run: cargo build --all-targets $CARGO_FEATURES
       - name: Test bindings
@@ -176,7 +176,7 @@ jobs:
       - name: Check format
         run: cargo fmt --all -- --check
       - name: Lint
-        run: cargo clippy --all-targets $CARGO_FEATURES -D warnings
+        run: cargo clippy --all-targets $CARGO_FEATURES -- -D warnings
       - name: Build
         run: cargo build --all-targets $CARGO_FEATURES
       - name: Test bindings
