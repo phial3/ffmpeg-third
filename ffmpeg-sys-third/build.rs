@@ -865,6 +865,12 @@ fn maybe_search_include(include_paths: &[PathBuf], header: &str) -> Option<Strin
 }
 
 fn link_to_libraries(statik: bool) {
+    if statik {
+        // without allow-multiple-definition, linking fails due to conflicting symbols:
+        // e.g. `ff_init_half2float_tables` (originally avutil) exported from avcodec and swscale.
+        println!("cargo:rustc-link-arg=-Wl,--allow-multiple-definition");
+    }
+
     let ffmpeg_ty = if statik { "static" } else { "dylib" };
     for lib in LIBRARIES.iter().filter(|lib| lib.enabled()) {
         println!("cargo:rustc-link-lib={}={}", ffmpeg_ty, lib.name);
