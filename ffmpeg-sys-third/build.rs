@@ -512,11 +512,23 @@ fn build(out_dir: &Path, ffmpeg_version: &str) -> io::Result<PathBuf> {
 
     configure.arg(format!("--prefix={}", install_dir.to_string_lossy()));
 
-    if env::var("TARGET").unwrap() != env::var("HOST").unwrap() {
+    let target = env::var("TARGET").unwrap();
+    let host = env::var("HOST").unwrap();
+    if target != host {
+        configure.arg("--enable-cross-compile");
+
         // Rust targets are subtly different than naming scheme for compiler prefixes.
         // The cc crate has the messy logic of guessing a working prefix,
         // and this is a messy way of reusing that logic.
         let cc = cc::Build::new();
+
+        // Apple-clang needs this, -arch is not enough.
+        let target_flag = format!("--target={}", target);
+        if cc.is_flag_supported(&target_flag).unwrap_or(false) {
+            configure.arg(format!("--extra-cflags={}", target_flag));
+            configure.arg(format!("--extra-ldflags={}", target_flag));
+        }
+
         let compiler = cc.get_compiler();
         let compiler = compiler.path().file_stem().unwrap().to_str().unwrap();
         let suffix_pos = compiler.rfind('-').unwrap(); // cut off "-gcc"
@@ -537,6 +549,7 @@ fn build(out_dir: &Path, ffmpeg_version: &str) -> io::Result<PathBuf> {
     if env::var("DEBUG").is_ok() {
         configure.arg("--enable-debug");
         configure.arg("--disable-stripping");
+        configure.arg("--disable-optimizations");
     } else {
         configure.arg("--disable-debug");
         configure.arg("--enable-stripping");
@@ -852,6 +865,12 @@ fn maybe_search_include(include_paths: &[PathBuf], header: &str) -> Option<Strin
 }
 
 fn link_to_libraries(statik: bool) {
+    if statik {
+        // without allow-multiple-definition, linking fails due to conflicting symbols:
+        // e.g. `ff_init_half2float_tables` (originally avutil) exported from avcodec and swscale.
+        println!("cargo:rustc-link-arg=-Wl,--allow-multiple-definition");
+    }
+
     let ffmpeg_ty = if statik { "static" } else { "dylib" };
     for lib in LIBRARIES.iter().filter(|lib| lib.enabled()) {
         println!("cargo:rustc-link-lib={}={}", ffmpeg_ty, lib.name);
@@ -873,7 +892,11 @@ fn main() {
             "cargo:rustc-link-search=native={}",
             install_dir.join("lib").to_string_lossy()
         );
+        // Add component libraries
         link_to_libraries(statik);
+
+        // Add any additional top-level libraries. Alreay linked in build()
+        // rustc_link_extralibs();
 
         vec![install_dir.join("include")]
     }
