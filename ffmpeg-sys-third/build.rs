@@ -549,6 +549,7 @@ fn build(out_dir: &Path, ffmpeg_version: &str) -> io::Result<PathBuf> {
     if env::var("DEBUG").is_ok() {
         configure.arg("--enable-debug");
         configure.arg("--disable-stripping");
+        configure.arg("--disable-optimizations");
     } else {
         configure.arg("--disable-debug");
         configure.arg("--enable-stripping");
@@ -885,7 +886,11 @@ fn main() {
             "cargo:rustc-link-search=native={}",
             install_dir.join("lib").to_string_lossy()
         );
+        // Add component libraries
         link_to_libraries(statik);
+
+        // Add any additional top-level libraries. Alreay linked in build()
+        // rustc_link_extralibs();
 
         vec![install_dir.join("include")]
     }
