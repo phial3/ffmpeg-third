@@ -408,7 +408,7 @@ mod test {
         for (i, (layout, valid)) in tests.iter().enumerate() {
             unsafe {
                 println!("{i}");
-                assert!((av_channel_layout_check(layout as _) != 0) == *valid);
+                assert_eq!((av_channel_layout_check(layout as _) != 0), *valid);
             }
         }
     }

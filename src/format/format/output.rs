@@ -1,6 +1,5 @@
 use std::path::Path;
 
-use std::ffi::CString;
 use std::ptr::{self, NonNull};
 
 use super::Flags;
@@ -59,7 +58,7 @@ impl Output {
 
     pub fn codec<P: AsRef<Path>>(self, path: P, kind: media::Type) -> codec::Id {
         // XXX: use to_cstring when stable
-        let path = CString::new(path.as_ref().to_str().unwrap()).unwrap();
+        let path = utils::from_path(path);
 
         unsafe {
             codec::Id::from(av_guess_codec(

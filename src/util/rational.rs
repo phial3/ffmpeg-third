@@ -26,10 +26,7 @@ impl Rational {
 
     #[inline]
     pub fn reduce(&self) -> Rational {
-        match self.reduce_with_limit(i32::MAX) {
-            Ok(r) => r,
-            Err(r) => r,
-        }
+        self.reduce_with_limit(i32::MAX).unwrap_or_else(|r| r)
     }
 
     #[inline]
