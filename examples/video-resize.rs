@@ -24,8 +24,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let input_codec_context = codec::context::Context::from_parameters(input_stream.parameters())?;
 
     // 创建解码器
-    let mut decoder =
-        codec::decoder::video::Video::from(input_codec_context.decoder().video().unwrap());
+    let mut decoder = input_codec_context.decoder().video().unwrap();
 
     // 使用标准的帧率值（如 25fps）
     let frame_rate = ffmpeg::Rational::new(25, 1);
@@ -78,7 +77,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 计算每帧的时间增量（以时基为单位）
     // 90000/25 = 3600，每帧增加3600个时基单位
-    let time_increment = (90000_i64 / 25) as i64;
+    let time_increment = 90000_i64 / 25;
 
     // 处理视频帧
     for (stream, packet) in input_context.packets().filter_map(Result::ok) {
