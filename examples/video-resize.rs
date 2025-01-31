@@ -35,7 +35,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 创建和配置编码器
     let codec = codec::encoder::find(codec::Id::H264);
-    let mut encoder = codec::context::Context::new_with_codec(codec.unwrap()).encoder().video()?;
+    let mut encoder = codec::context::Context::new_with_codec(codec.unwrap())
+        .encoder()
+        .video()?;
 
     // 设置编码器参数
     encoder.set_height(height);

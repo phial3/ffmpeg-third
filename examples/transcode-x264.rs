@@ -55,7 +55,9 @@ impl Transcoder {
         let codec = encoder::find(codec::Id::H264);
         let mut ost = octx.add_stream(codec)?;
 
-        let mut encoder = codec::context::Context::new_with_codec(codec.unwrap()).encoder().video()?;
+        let mut encoder = codec::context::Context::new_with_codec(codec.unwrap())
+            .encoder()
+            .video()?;
         ost.set_parameters_into(&encoder);
         encoder.set_height(decoder.height());
         encoder.set_width(decoder.width());
