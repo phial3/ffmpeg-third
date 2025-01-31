@@ -32,7 +32,7 @@ use crate::ffi::*;
 use crate::Codec;
 
 pub fn new() -> Encoder {
-    Context::new(None).encoder()
+    Context::new().encoder()
 }
 
 pub fn find(id: Id) -> Option<Codec> {
