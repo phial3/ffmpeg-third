@@ -1,5 +1,6 @@
 extern crate ffmpeg_the_third as ffmpeg;
 
+use ffmpeg::codec::Parameters;
 use ffmpeg::{codec, format, frame, media, picture, software};
 use std::env;
 
@@ -54,7 +55,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // 创建输出流
     let mut output_stream = output_context.add_stream(codec)?;
-    output_stream.set_parameters_into(&encoder);
+    output_stream.set_parameters(Parameters::from(&encoder));
     output_context.write_header()?;
 
     // 创建缩放器
