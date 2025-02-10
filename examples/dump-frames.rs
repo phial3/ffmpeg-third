@@ -18,7 +18,18 @@ fn main() -> Result<(), ffmpeg::Error> {
             .ok_or(ffmpeg::Error::StreamNotFound)?;
         let video_stream_index = input.index();
 
-        let context_decoder = ffmpeg::codec::context::Context::from_parameters(input.parameters())?;
+        let mut context_decoder =
+            ffmpeg::codec::context::Context::from_parameters(input.parameters())?;
+
+        if let Ok(parallelism) = std::thread::available_parallelism() {
+            context_decoder.set_threading(ffmpeg::threading::Config {
+                kind: ffmpeg::threading::Type::Frame,
+                count: parallelism.get(),
+                #[cfg(not(feature = "ffmpeg_6_0"))]
+                safe: false,
+            });
+        }
+
         let mut decoder = context_decoder.decoder().video()?;
 
         let mut scaler = Context::get(
@@ -59,7 +70,11 @@ fn main() -> Result<(), ffmpeg::Error> {
 }
 
 fn save_file(frame: &Video, index: usize) -> std::result::Result<(), std::io::Error> {
-    let mut file = File::create(format!("frame{index}.ppm"))?;
+    let dump_dir = std::path::Path::new("/tmp/dump");
+    if !dump_dir.exists() {
+        std::fs::create_dir_all(dump_dir)?;
+    }
+    let mut file = File::create(format!("{}/frame{index}.ppm", dump_dir.to_str().unwrap()))?;
     file.write_all(format!("P6\n{} {}\n255\n", frame.width(), frame.height()).as_bytes())?;
     file.write_all(frame.data(0))?;
     Ok(())
