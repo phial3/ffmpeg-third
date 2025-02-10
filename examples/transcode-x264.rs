@@ -21,6 +21,7 @@ use std::collections::HashMap;
 use std::env;
 use std::time::Instant;
 
+use ffmpeg::codec::Parameters;
 use ffmpeg::{
     codec, decoder, encoder, format, frame, log, media, picture, Dictionary, Packet, Rational,
 };
@@ -58,7 +59,7 @@ impl Transcoder {
         let mut encoder = codec::context::Context::new_with_codec(codec.unwrap())
             .encoder()
             .video()?;
-        ost.set_parameters_into(&encoder);
+        ost.set_parameters(Parameters::from(&encoder));
         encoder.set_height(decoder.height());
         encoder.set_width(decoder.width());
         encoder.set_aspect_ratio(decoder.aspect_ratio());
@@ -73,7 +74,7 @@ impl Transcoder {
         let opened_encoder = encoder
             .open_with(x264_opts)
             .expect("error opening x264 with supplied settings");
-        ost.set_parameters_into(&opened_encoder);
+        ost.set_parameters(Parameters::from(&opened_encoder));
         Ok(Self {
             ost_index,
             decoder,
